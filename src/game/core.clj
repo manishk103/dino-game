@@ -5,33 +5,70 @@
 ;; Helpers
 ;; =======
 (defn make-dino []
-  {:x      10
+  {:x      60
    :y      100
    :width  30
    :height 100
    :jumping? false})
 
+(defn make-obstacle []
+  {:x      (+ 600 (rand-int 100))
+   :y      160
+   :width  10
+   :height 40})
+
+(defn game-end []
+  {:x      400
+   :y      160
+   :width  20
+   :height 40})
+
 (defn draw-dino [{:keys [x y width height]}]
-  (q/rect x y width height))
+  (q/rect x y width height)
+  (q/fill 0))
+
+(defn draw-obstacle [{:keys [x y width height]}]
+  (q/rect x y width height)
+  (q/fill 0))
+
+(defn draw-game-end [{:keys [x y width height]}]
+  (q/rect x y width height)
+  (q/fill 255 0 0))
 
 (defn make-game []
-  {:dino (make-dino)})
+  {:dino (make-dino)
+   :obstacle (make-obstacle)})
 
 (defn jump [dino]
   (if (:jumping? dino)
     dino
     (-> dino
-        (update-in [:y] - 80)
+        (update-in [:y] - 90)
         (assoc :jumping? true))))
 
 (defn apply-gravity [dino]
   (if (:jumping? dino)
-    (let [falling-dino (update-in dino [:y] + (min 3 (- 100 (:y dino))))]
+    (let [falling-dino (update-in dino [:y] + (min 2 (- 100 (:y dino))))]
       (if (= 100 (:y falling-dino))
         (assoc falling-dino :jumping? false)
         falling-dino))
     dino))
 
+(defn move-obstacle [obstacle]
+    (update-in obstacle [:x] - 4))
+
+;;(defn check-game-state [dino obstacle]
+;;  (if (or (= (get-in dino [:y]) (get-in obstacle [:x])) (= (get-in dino [:y]) (get-in obstacle [:y])))
+;;    true))
+
+
+(defn check-colliding? [dino obstacle]
+  (and (and (>= (+ (:x dino) (:width dino)) (:x obstacle))
+            (<= (+ (:x dino) (:width dino)) (+ (:x obstacle)
+                                               (:width obstacle))))
+       (and (>= (+ (:y dino) (:height dino)) (:y obstacle))
+            (<= (+ (:y dino) (:height dino)) (+ (:y obstacle)
+                                                (:height obstacle))))))
 
 ;; Quil
 ;; ====
@@ -40,11 +77,23 @@
   (make-game))
 
 (defn update-state [state]
-  (update-in state [:dino] apply-gravity))
+  (if (check-colliding? (:dino state) (:obstacle state))
+    (make-game)
+    (if (<= (get-in state [:obstacle :x]) 0)
+      (-> state
+          (update-in [:dino] apply-gravity)
+          (assoc      :obstacle (make-obstacle)))
+      (-> state
+          (update-in [:dino] apply-gravity)
+          (update-in [:obstacle] move-obstacle)))))
 
 (defn draw-state [state]
-  (q/background 200)
-  (draw-dino (:dino state)))
+  (if (check-colliding? (:dino state) (:obstacle state))
+    (q/background 255 0 0)
+    (do
+      (q/background 200)
+      (draw-dino (:dino state))
+      (draw-obstacle (:obstacle state)))))
 
 (defn key-typed [state {:keys [key-code]}]
   (condp = key-code
