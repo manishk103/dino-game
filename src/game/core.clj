@@ -19,7 +19,7 @@
 
 (defn draw-dino [{:keys [x y width height]}]
   (q/rect x y width height)
-  (q/fill 0))
+  (q/fill 0 0 255))
 
 (defn draw-obstacle [{:keys [x y width height]}]
   (q/rect x y width height)
@@ -59,31 +59,15 @@
        (<= b (+ y height))))
 
 (defn check-colliding? [game-obj-1 game-obj-2]
-  (or (contains-point? game-obj-2 [(:x game-obj-1)
-                                   (:y game-obj-1)])
-      (contains-point? game-obj-2 [(:x game-obj-1)
-                                   (+ (:y game-obj-1)
-                                      (:height game-obj-1))])
-      (contains-point? game-obj-2 [(+ (:x game-obj-1)
-                                      (:width game-obj-1))
-                                   (:y game-obj-1)])
-      (contains-point? game-obj-2 [(+ (:x game-obj-1)
-                                      (:width game-obj-1))
-                                   (+ (:y game-obj-1)
-                                      (:height game-obj-1))])
+  (or (contains-point? game-obj-2 [(:x game-obj-1) (:y game-obj-1)])
+      (contains-point? game-obj-2 [(:x game-obj-1) (+ (:y game-obj-1) (:height game-obj-1))])
+      (contains-point? game-obj-2 [(+ (:x game-obj-1) (:width game-obj-1)) (:y game-obj-1)])
+      (contains-point? game-obj-2 [(+ (:x game-obj-1) (:width game-obj-1)) (+ (:y game-obj-1) (:height game-obj-1))])
 
-      (contains-point? game-obj-1 [(:x game-obj-2)
-                                   (:y game-obj-2)])
-      (contains-point? game-obj-1 [(:x game-obj-2)
-                                   (+ (:y game-obj-2)
-                                      (:height game-obj-2))])
-      (contains-point? game-obj-1 [(+ (:x game-obj-2)
-                                      (:width game-obj-2))
-                                   (:y game-obj-2)])
-      (contains-point? game-obj-1 [(+ (:x game-obj-2)
-                                      (:width game-obj-2))
-                                   (+ (:y game-obj-2)
-                                      (:height game-obj-2))])))
+      (contains-point? game-obj-1 [(:x game-obj-2) (:y game-obj-2)])
+      (contains-point? game-obj-1 [(:x game-obj-2) (+ (:y game-obj-2) (:height game-obj-2))])
+      (contains-point? game-obj-1 [(+ (:x game-obj-2) (:width game-obj-2)) (:y game-obj-2)])
+      (contains-point? game-obj-1 [(+ (:x game-obj-2) (:width game-obj-2)) (+ (:y game-obj-2) (:height game-obj-2))])))
 
 ;; Quil
 ;; ====
