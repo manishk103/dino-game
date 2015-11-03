@@ -19,19 +19,15 @@
 
 (defn draw-dino [{:keys [x y width height]}]
   (q/rect x y width height)
-  (q/fill 0 0 255))
+  (q/fill 0))
 
 (defn draw-obstacle [{:keys [x y width height]}]
   (q/rect x y width height)
-  (q/fill 0))
-
-(defn draw-game-end [{:keys [x y width height]}]
-  (q/rect x y width height)
-  (q/fill 255 0 0))
+  (q/fill 0 0 0))
 
 (defn make-game []
   {:dino (make-dino)
-   :obstacle (make-obstacle)
+   :obstacles [(make-obstacle)]
    :score 0})
 
 (defn jump [dino]
@@ -49,8 +45,9 @@
         falling-dino))
     dino))
 
-(defn move-obstacle [obstacle]
-    (update-in obstacle [:x] - 4))
+(defn move-obstacles [obstacles]
+  (for [obstacle obstacles]
+    (update-in obstacle [:x] - 4)))
 
 (defn contains-point? [{:keys [x y width height]} [a b]]
   (and (>= a x)
@@ -76,26 +73,30 @@
   (make-game))
 
 (defn update-state [state]
-  (if (check-colliding? (:dino state) (:obstacle state))
-    ;(q/text (str "Score: " (:score state)) 250 70)
-    (make-game)
-    (if (<= (get-in state [:obstacle :x]) 0)
-      (-> state
-          (update-in [:dino] apply-gravity)
-          (assoc     :obstacle (make-obstacle)))
-      (-> state
-          (update-in [:dino] apply-gravity)
-          (update-in [:obstacle] move-obstacle)
-          (update-in [:score] inc  )))))
+;;  (if (true? (check-colliding? (:dino state) (:obstacles state)))
+;;    (make-game)
+    (let [obstacle (first (:obstacles state))]
+      (if (<= (get obstacle :x) 10)
+        (-> state
+            (update-in [:dino] apply-gravity)
+            (dissoc    :obstacles)
+            (assoc     :obstacles [(make-obstacle)]))
+        (-> state
+            (update-in [:dino] apply-gravity)
+            (update-in [:obstacles] move-obstacles)
+            (update-in [:score] inc )))))
+;;))
 
-(defn draw-state [state]
-  (if (check-colliding? (:dino state) (:obstacle state))
-    (q/background 255 0 0)
-    (do
-      (q/background 200)
-      (q/text (str "Score: " (:score state)) 500 10)
-      (draw-dino (:dino state))
-      (draw-obstacle (:obstacle state)))))
+  (defn draw-state [state]
+    ;;(if (check-colliding? (:dino state) (:obstacles state))
+    ;;  (q/background 255 0 0)
+      (do
+        (q/background 200)
+        (q/text (str "Score: " (:score state)) 500 10)
+        (draw-dino (:dino state)))
+      (doseq [obstacle (:obstacles state)]
+        (draw-obstacle obstacle)))
+  ;;))
 
 (defn key-typed [state {:keys [key-code]}]
   (condp = key-code
