@@ -73,9 +73,9 @@
   (make-game))
 
 (defn update-state [state]
-;;  (if (true? (check-colliding? (:dino state) (:obstacles state)))
-;;    (make-game)
-    (let [obstacle (first (:obstacles state))]
+  (let [obstacle (first (:obstacles state))]
+    (if (true? (check-colliding? (:dino state) obstacle ))
+      (make-game)
       (if (<= (get obstacle :x) 10)
         (-> state
             (update-in [:dino] apply-gravity)
@@ -84,18 +84,19 @@
         (-> state
             (update-in [:dino] apply-gravity)
             (update-in [:obstacles] move-obstacles)
-            (update-in [:score] inc )))))
+            (update-in [:score] inc ))))))
 ;;))
 
-  (defn draw-state [state]
-    ;;(if (check-colliding? (:dino state) (:obstacles state))
-    ;;  (q/background 255 0 0)
+(defn draw-state [state]
+  (let [obstacle (first (:obstacles state))]
+    (if (true? (check-colliding? (:dino state) obstacle))
+      (q/background 255 0 0)
       (do
         (q/background 200)
         (q/text (str "Score: " (:score state)) 500 10)
-        (draw-dino (:dino state)))
-      (doseq [obstacle (:obstacles state)]
-        (draw-obstacle obstacle)))
+        (draw-dino (:dino state))
+        (doseq [obstacle (:obstacles state)]
+          (draw-obstacle obstacle))))))
   ;;))
 
 (defn key-typed [state {:keys [key-code]}]
